@@ -16,6 +16,7 @@
 
 @interface VKDelegate ()
 @property(nonatomic, copy) FormControllerCallback formControllerCallback;
+@property(nonatomic, strong) VKActivity *activity;
 @end
 
 @implementation VKDelegate
@@ -81,9 +82,6 @@
 @end
 
 @implementation SHKiOSVkontakte
-{
-    VKActivity *_activity;
-}
 
 + (VKDelegate *)instanceVK
 {
@@ -174,10 +172,13 @@
 - (void)sendImageAction
 {
     NSArray *items = @[self.item.image, self.item.title];
-    _activity = [VKActivity new];
-    [_activity prepareWithActivityItems:items];
-    VKShareDialogController *const present = (VKShareDialogController *const) _activity.activityViewController;
+    [SHKiOSVkontakte instanceVK].activity = [VKActivity new];
+    [[SHKiOSVkontakte instanceVK].activity prepareWithActivityItems:items];
+    VKShareDialogController *const present = (VKShareDialogController *const) [SHKiOSVkontakte instanceVK].activity.activityViewController;
     present.dismissAutomatically = YES;
+    present.completionHandler = ^(VKShareDialogControllerResult result) {
+        [SHKiOSVkontakte instanceVK].activity = nil;
+    };
     [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:present animated:YES completion:nil];
 }
 
