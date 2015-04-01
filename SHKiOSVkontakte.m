@@ -7,10 +7,15 @@
 #import "SHKSharer_protected.h"
 #import "VKSdk.h"
 #import "SHKConfiguration.h"
+#import "FormControllerCallback.h"
 
 
 @interface VKDelegate : NSObject <VKSdkDelegate>
 @property(nonatomic, strong) SHKiOSVkontakte *sharer;
+@end
+
+@interface VKDelegate ()
+@property(nonatomic, copy) FormControllerCallback formControllerCallback;
 @end
 
 @implementation VKDelegate
@@ -33,6 +38,7 @@
     if ([o respondsToSelector:@selector(sharerAuthDidFinish:success:)])
     {
         [o sharerAuthDidFinish:self.sharer success:NO];
+        self.formControllerCallback = [self.sharer authorizationFormCancel];
         self.sharer = nil;
     }
 }
@@ -48,12 +54,36 @@
     if ([o respondsToSelector:@selector(sharerAuthDidFinish:success:)])
     {
         [o sharerAuthDidFinish:self.sharer success:YES];
-        self.sharer = nil;
+        self.formControllerCallback = [self.sharer authorizationFormSave];
     }
 }
+
+- (BOOL)vkSdkAuthorizationAllowFallbackToSafari
+{
+    return NO;
+}
+
+- (BOOL)vkSdkIsBasicAuthorization
+{
+    return YES;
+}
+
+- (void)vkSdkDidDismissViewController:(UIViewController *)controller
+{
+    if (self.formControllerCallback)
+    {
+        self.formControllerCallback(nil);
+    }
+    self.sharer = nil;
+}
+
+
 @end
 
 @implementation SHKiOSVkontakte
+{
+    VKActivity *_activity;
+}
 
 + (VKDelegate *)instanceVK
 {
@@ -126,8 +156,29 @@
 
 - (BOOL)send
 {
-    NSAssert(YES, @"Not implemented yet");
-    return NO;
+    if (![self validateItem])
+        return NO;
+
+    switch (self.item.shareType)
+    {
+        case SHKShareTypeImage:
+            [self sendImageAction];
+            break;
+        default:
+            return NO;
+    }
+
+    return YES;
+}
+
+- (void)sendImageAction
+{
+    NSArray *items = @[self.item.image, self.item.title];
+    _activity = [VKActivity new];
+    [_activity prepareWithActivityItems:items];
+    VKShareDialogController *const present = (VKShareDialogController *const) _activity.activityViewController;
+    present.dismissAutomatically = YES;
+    [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:present animated:YES completion:nil];
 }
 
 @end
