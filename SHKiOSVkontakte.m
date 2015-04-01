@@ -126,7 +126,7 @@
 
 - (BOOL)send
 {
-    HMLAssert(YES, @"Not implemented yet");
+    NSAssert(YES, @"Not implemented yet");
     return NO;
 }
 
