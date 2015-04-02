@@ -176,7 +176,17 @@
     [[SHKiOSVkontakte instanceVK].activity prepareWithActivityItems:items];
     VKShareDialogController *const present = (VKShareDialogController *const) [SHKiOSVkontakte instanceVK].activity.activityViewController;
     present.dismissAutomatically = YES;
-    present.completionHandler = ^(VKShareDialogControllerResult result) {
+    present.completionHandler = ^(VKShareDialogControllerResult result)
+    {
+        switch (result)
+        {
+            case VKShareDialogControllerResultCancelled:
+                [self.shareDelegate sharer:self failedWithError:nil shouldRelogin:NO];
+                break;
+            case VKShareDialogControllerResultDone:
+                [self.shareDelegate sharerFinishedSending:self];
+                break;
+        }
         [SHKiOSVkontakte instanceVK].activity = nil;
     };
     [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:present animated:YES completion:nil];
