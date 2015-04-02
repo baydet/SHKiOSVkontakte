@@ -39,10 +39,10 @@
     if ([o respondsToSelector:@selector(sharerAuthDidFinish:success:)])
     {
         [o sharerAuthDidFinish:self.sharer success:NO];
-        self.formControllerCallback = [self.sharer authorizationFormCancel];
-        if (!self.isVCWillBePresented)
-            self.formControllerCallback(nil);
     }
+    self.formControllerCallback = [self.sharer authorizationFormCancel];
+    if (!self.isVCWillBePresented)
+        self.formControllerCallback(nil);
 }
 
 - (void)vkSdkShouldPresentViewController:(UIViewController *)controller
@@ -57,10 +57,10 @@
     if ([o respondsToSelector:@selector(sharerAuthDidFinish:success:)])
     {
         [o sharerAuthDidFinish:self.sharer success:YES];
-        self.formControllerCallback = [self.sharer authorizationFormSave];
-        if (!self.isVCWillBePresented)
-            self.formControllerCallback(nil);
     }
+    self.formControllerCallback = [self.sharer authorizationFormSave];
+    if (!self.isVCWillBePresented)
+        self.formControllerCallback(nil);
 }
 
 - (BOOL)vkSdkAuthorizationAllowFallbackToSafari
