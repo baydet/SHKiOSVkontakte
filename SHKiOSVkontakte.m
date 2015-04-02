@@ -17,6 +17,7 @@
 @interface VKDelegate ()
 @property(nonatomic, copy) FormControllerCallback formControllerCallback;
 @property(nonatomic, strong) VKActivity *activity;
+@property(nonatomic) BOOL isVCWillBePresented;
 @end
 
 @implementation VKDelegate
@@ -25,7 +26,6 @@
 
 - (void)vkSdkNeedCaptchaEnter:(VKError *)captchaError
 {
-    NSLog(@"%s", sel_getName(_cmd));
 }
 
 - (void)vkSdkTokenHasExpired:(VKAccessToken *)expiredToken
@@ -40,12 +40,14 @@
     {
         [o sharerAuthDidFinish:self.sharer success:NO];
         self.formControllerCallback = [self.sharer authorizationFormCancel];
-        self.sharer = nil;
+        if (!self.isVCWillBePresented)
+            self.formControllerCallback(nil);
     }
 }
 
 - (void)vkSdkShouldPresentViewController:(UIViewController *)controller
 {
+    self.isVCWillBePresented = YES;
     [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:controller animated:YES completion:nil];
 }
 
@@ -56,6 +58,8 @@
     {
         [o sharerAuthDidFinish:self.sharer success:YES];
         self.formControllerCallback = [self.sharer authorizationFormSave];
+        if (!self.isVCWillBePresented)
+            self.formControllerCallback(nil);
     }
 }
 
@@ -76,6 +80,12 @@
         self.formControllerCallback(nil);
     }
     self.sharer = nil;
+}
+
+- (void)setSharer:(SHKiOSVkontakte *)sharer
+{
+    _sharer = sharer;
+    self.isVCWillBePresented = NO;
 }
 
 
@@ -129,7 +139,7 @@
 {
     if (![self isAuthorized])
         [SHKiOSVkontakte instanceVK].sharer = self;
-    [VKSdk authorize:@[@"wall"] revokeAccess:YES];
+    [VKSdk authorize:@[VK_PER_PHOTOS, VK_PER_WALL] revokeAccess:YES];
 }
 
 + (void)logout
@@ -181,7 +191,7 @@
         switch (result)
         {
             case VKShareDialogControllerResultCancelled:
-                [self.shareDelegate sharer:self failedWithError:nil shouldRelogin:NO];
+                [self.shareDelegate sharerCancelledSending:self];
                 break;
             case VKShareDialogControllerResultDone:
                 [self.shareDelegate sharerFinishedSending:self];
