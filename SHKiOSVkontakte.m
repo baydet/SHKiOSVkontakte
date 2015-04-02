@@ -132,7 +132,7 @@
 
 + (NSString *)sharerTitle
 {
-    return @"Вконтакте";
+    return @"VK";
 }
 
 - (void)promptAuthorization
