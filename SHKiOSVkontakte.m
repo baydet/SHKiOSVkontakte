@@ -41,8 +41,9 @@
         [o sharerAuthDidFinish:self.sharer success:NO];
     }
     self.formControllerCallback = [self.sharer authorizationFormCancel];
-    if (!self.isVCWillBePresented)
+    if (!self.isVCWillBePresented && self.formControllerCallback)
         self.formControllerCallback(nil);
+    self.sharer = nil;
 }
 
 - (void)vkSdkShouldPresentViewController:(UIViewController *)controller
@@ -59,8 +60,9 @@
         [o sharerAuthDidFinish:self.sharer success:YES];
     }
     self.formControllerCallback = [self.sharer authorizationFormSave];
-    if (!self.isVCWillBePresented)
+    if (!self.isVCWillBePresented && self.formControllerCallback)
         self.formControllerCallback(nil);
+    self.sharer = nil;
 }
 
 - (BOOL)vkSdkAuthorizationAllowFallbackToSafari
@@ -79,7 +81,6 @@
     {
         self.formControllerCallback(nil);
     }
-    self.sharer = nil;
 }
 
 - (void)setSharer:(SHKiOSVkontakte *)sharer
@@ -200,6 +201,11 @@
         [SHKiOSVkontakte instanceVK].activity = nil;
     };
     [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:present animated:YES completion:nil];
+}
+
+- (void)setShareDelegate:(id <SHKSharerDelegate>)delegate
+{
+    [super setShareDelegate:delegate];
 }
 
 @end
