@@ -60,8 +60,11 @@
         [o sharerAuthDidFinish:self.sharer success:YES];
     }
     self.formControllerCallback = [self.sharer authorizationFormSave];
-    if (!self.isVCWillBePresented && self.formControllerCallback)
+    if (self.formControllerCallback)
+    {
         self.formControllerCallback(nil);
+        self.formControllerCallback = nil;
+    }
     self.sharer = nil;
 }
 
