@@ -143,7 +143,7 @@
 {
     if (![self isAuthorized])
         [SHKiOSVkontakte instanceVK].sharer = self;
-    [VKSdk authorize:@[VK_PER_PHOTOS, VK_PER_WALL] revokeAccess:YES];
+    [VKSdk authorize:SHKCONFIG(vkontaktePermissions) revokeAccess:YES];
 }
 
 + (void)logout
