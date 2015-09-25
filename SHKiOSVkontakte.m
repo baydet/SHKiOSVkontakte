@@ -185,7 +185,11 @@
 
 - (void)sendImageAction
 {
-    NSArray *items = @[self.item.image, self.item.title];
+    NSMutableArray *items = [@[self.item.image, self.item.title] mutableCopy];
+    if (self.item.URL)
+    {
+        [items addObject:self.item.URL];
+    }
     [SHKiOSVkontakte instanceVK].activity = [VKActivity new];
     [[SHKiOSVkontakte instanceVK].activity prepareWithActivityItems:items];
     VKShareDialogController *const present = (VKShareDialogController *const) [SHKiOSVkontakte instanceVK].activity.activityViewController;
