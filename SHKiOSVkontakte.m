@@ -10,7 +10,7 @@
 #import "FormControllerCallback.h"
 
 
-@interface VKDelegate : NSObject <VKSdkDelegate>
+@interface VKDelegate : NSObject <VKSdkDelegate, VKSdkUIDelegate>
 @property(nonatomic, strong) SHKiOSVkontakte *sharer;
 @end
 
@@ -106,11 +106,20 @@
         if (_instance == nil)
         {
             _instance = [VKDelegate new];
-            [VKSdk initializeWithDelegate:_instance andAppId:SHKCONFIG(vkontakteAppId)];
-            if ([VKSdk wakeUpSession])
+            
+            VKSdk *sdk = [VKSdk initializeWithAppId:SHKCONFIG(vkontakteAppId)];
+            [sdk registerDelegate:_instance];
+            [sdk setUiDelegate:_instance];
+            [VKSdk wakeUpSession:SHKCONFIG(vkontaktePermissions) completeBlock:^(VKAuthorizationState state, NSError *error)
             {
-                //Start working
-            }
+                if (state == VKAuthorizationAuthorized)
+                {
+                    // Authorized and ready to go
+                } else if (error)
+                {
+                    // Some error happend, but you may try later
+                }
+            }];
         }
     }
 
@@ -143,7 +152,7 @@
 {
     if (![self isAuthorized])
         [SHKiOSVkontakte instanceVK].sharer = self;
-    [VKSdk authorize:SHKCONFIG(vkontaktePermissions) revokeAccess:YES];
+    [VKSdk authorize:SHKCONFIG(vkontaktePermissions) withOptions:VKAuthorizationOptionsUnlimitedToken];
 }
 
 + (void)logout
@@ -185,12 +194,16 @@
 
 - (void)sendImageAction
 {
-    NSArray *items = @[self.item.image, self.item.title];
+    NSMutableArray *items = [@[self.item.image, self.item.title] mutableCopy];
+    if (self.item.URL)
+    {
+            [items addObject:self.item.URL];
+    }
     [SHKiOSVkontakte instanceVK].activity = [VKActivity new];
     [[SHKiOSVkontakte instanceVK].activity prepareWithActivityItems:items];
     VKShareDialogController *const present = (VKShareDialogController *const) [SHKiOSVkontakte instanceVK].activity.activityViewController;
     present.dismissAutomatically = YES;
-    present.completionHandler = ^(VKShareDialogControllerResult result)
+    present.completionHandler = ^(VKShareDialogController *dialog, VKShareDialogControllerResult result)
     {
         switch (result)
         {
